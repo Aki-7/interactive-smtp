@@ -1,6 +1,6 @@
 # -*- coding : UTF-8 -*-
 
-import socket, sys, ssl, binascii, base64, datetime, time, os
+import socket, sys, ssl, binascii, base64, datetime, time, os, select
 from email import utils
 
 def info(str):
@@ -19,7 +19,6 @@ class SMTPClient:
         self._ssl_context = ssl.create_default_context()
         self._ssl_context.check_hostname = False
         self._ssl_context.verify_mode = ssl.CERT_NONE
-        self.no_response = False
         self.__print_status()
 
     def connect(self):
@@ -36,12 +35,11 @@ class SMTPClient:
         )
         self.socket = self._ssl_sock
 
-    def send(self, ascii_str, no_print = False):
+    def send(self, ascii_str, no_print = False, secret = False):
         self.socket.send((ascii_str).encode("ascii"))
         if not no_print:
-            self.__print_send_message(ascii_str)
-        if (self.no_response == False):
-            self.receive()
+            self.__print_send_message(ascii_str, secret = secret)
+        self.receive()
 
     def put(self):
         while(True):
@@ -59,14 +57,20 @@ class SMTPClient:
             self._sock.close()
             info("close socket")
 
-    def receive(self):
-        res = self.socket.recv(self.BUFFER_SIZE)
-        self.__print_response(res)
+    def receive(self, timeout = 0.3):
+        rrdy, wrdy, xrdy = select.select([self.socket], [], [], timeout)
+        for s in rrdy:
+            if not s == self.socket:
+                break
+            res = s.recv(self.BUFFER_SIZE)
+            self.__print_response(res)
 
     def __print_response(self, bin_s):
         print("[-] Server : ", bin_s.decode("ascii"), end="")
 
-    def __print_send_message(self, s):
+    def __print_send_message(self, s, secret = False):
+        if secret:
+            s = "********\n"
         print("[+] Client : ", s, end="")
 
     def __print_status(self):
@@ -113,7 +117,6 @@ if __name__ == "__main__":
     client.send("MAIL FROM:<sample@sample.com>\n")
     client.send("RCPT TO:<sample@sample.com>\n")
     client.send("DATA\n")
-    client.no_response = True
     client.send("FROM: Aki\n")
     client.send("TO: Ika\n")
     client.send("Date: {}\n".format(Util.now()))
@@ -121,6 +124,5 @@ if __name__ == "__main__":
     client.send("\n")
     client.send("Hello SMTP!\n")
     client.send(".\n")
-    client.no_response = False
     client.receive()
     client.send("QUIT\n")
