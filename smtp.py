@@ -45,7 +45,7 @@ class SMTPClient:
         while(True):
             try:
                 val = input("[+] Client : ")
-                self.send(val + "\n", no_print=True)
+                self.send(val + "\r\n", no_print=True)
             except KeyboardInterrupt:
                 break
 
@@ -66,7 +66,9 @@ class SMTPClient:
             self.__print_response(res)
 
     def __print_response(self, bin_s):
-        print("[-] Server : ", bin_s.decode("ascii"), end="")
+        string = bin_s.decode("ascii")
+        end = "" if string.endswith("\n") else "\n"
+        print("[-] Server : ", string , end=end)
 
     def __print_send_message(self, s, secret = False):
         if secret:
@@ -94,7 +96,7 @@ class Util:
     @classmethod
     def b64encoded_account(cls, username, password):
         str = "{name}\0{name}\0{passwd}".format(name=username, passwd=password)
-        return base64.b64encode(str.encode()).decode() + "\n"
+        return base64.b64encode(str.encode()).decode() + "\r\n"
 
     @classmethod
     def now(cls):
@@ -111,18 +113,18 @@ if __name__ == "__main__":
     client = SMTPClient(hostname, 587)
     client.connect()
     client.start_tls()
-    client.send("AUTH PLAIN\n")
+    client.send("AUTH PLAIN\r\n")
     auth = Util.b64encoded_account(username=username, password=password)
     client.send(auth)
-    client.send("MAIL FROM:<sample@sample.com>\n")
-    client.send("RCPT TO:<sample@sample.com>\n")
-    client.send("DATA\n")
-    client.send("FROM: Aki\n")
-    client.send("TO: Ika\n")
-    client.send("Date: {}\n".format(Util.now()))
+    client.send("MAIL FROM:<sample@sample.com>\r\n")
+    client.send("RCPT TO:<sample@sample.com>\r\n")
+    client.send("DATA\r\n")
+    client.send("FROM: Aki\r\n")
+    client.send("TO: Ika\r\n")
+    client.send("Date: {}\r\n".format(Util.now()))
     client.send("Subject: \(- - )")
-    client.send("\n")
-    client.send("Hello SMTP!\n")
-    client.send(".\n")
+    client.send("\r\n")
+    client.send("Hello SMTP!\r\n")
+    client.send(".\r\n")
     client.receive()
-    client.send("QUIT\n")
+    client.send("QUIT\r\n")
