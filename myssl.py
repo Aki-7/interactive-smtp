@@ -103,7 +103,7 @@ class Util:
         addrs = socket.getaddrinfo(domain, 80)
         if len(addrs) < 1:
             return None
-        return addrs[0][4][0]
+        return [i[4][0] for i in addrs if len(i[4][0].split(".")) > 1][0]
 
     @classmethod
     def b64encoded_account(cls, username, password):
