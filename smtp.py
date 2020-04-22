@@ -104,6 +104,10 @@ class Util:
         return base64.b64decode(string).decode()
 
     @classmethod
+    def b64encode(cls, string):
+        return base64.b64encode(string.encode("utf-8")).decode()
+
+    @classmethod
     def now(cls):
         now = datetime.datetime.now()
         nowtuple = now.timetuple()
