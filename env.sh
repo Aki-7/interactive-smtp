@@ -1,0 +1,5 @@
+export MAIL_USERNAME="your username"
+export MAIL_PASSWORD="your password"
+export MAIL_HOST="yourhost"
+export MAIL_FROM=""
+export MAIL_TO=""
