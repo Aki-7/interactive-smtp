@@ -1,0 +1,15 @@
+Subject: (- - )
+Content-Type: multipart/mixed; boundary="3fieoiur3omcqiw"
+
+--3fieoiur3omcqiw
+Content-Type: text/plain
+
+wow
+--3fieoiur3omcqiw
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: base64
+Content-disposition: attachment; filename="sample.txt"
+
+44Gq44KT44Gm44GT44Gj44Gf
+--3fieoiur3omcqiw--
+.

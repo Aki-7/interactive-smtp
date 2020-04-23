@@ -1,6 +1,6 @@
 # -*- coding : UTF-8 -*-
 
-import socket, sys, ssl, binascii, base64, datetime, time, os, select
+import socket, sys, ssl, base64, datetime, time, os, select
 from email import utils
 
 def info(str):
@@ -43,6 +43,17 @@ class SSLClient:
         if not no_print:
             self.__print_send_message(ascii_str, secret = secret)
         self.receive()
+
+    def send_multi(self):
+        lines = []
+        while(True):
+            line = input()
+            lines.append(line)
+            if line == ".":
+                break
+
+        for line in lines:
+            self.send(line + "\r\n")
 
     def talk(self):
         while(True):
@@ -126,25 +137,35 @@ class Util:
         rfc822 = utils.formatdate(nowtimestamp)
         return rfc822
 
-if __name__ == "__main__":
+def smtp():
     username = os.environ["MAIL_USERNAME"]
     password = os.environ["MAIL_PASSWORD"]
-    hostname = "<...>"
-    client = SMTPClient(hostname, 587)
-    client.connect()
-    client.start_tls()
-    client.send("AUTH PLAIN\r\n")
+    host = os.environ["MAIL_HOST"]
+    to = os.environ["MAIL_TO"]
+    by = os.environ["MAIL_FROM"]
+    c = SSLClient(host, 587)
+    c.connect()
+    c.start_tls()
+    c.send("AUTH PLAIN\r\n")
     auth = Util.b64encoded_account(username=username, password=password)
-    client.send(auth)
-    client.send("MAIL FROM:<sample@sample.com>\r\n")
-    client.send("RCPT TO:<sample@sample.com>\r\n")
-    client.send("DATA\r\n")
-    client.send("FROM: Aki\r\n")
-    client.send("TO: Ika\r\n")
-    client.send("Date: {}\r\n".format(Util.now()))
-    client.send("Subject: \(- - )")
-    client.send("\r\n")
-    client.send("Hello SMTP!\r\n")
-    client.send(".\r\n")
-    client.receive()
-    client.send("QUIT\r\n")
+    c.send(auth, secret=True)
+    c.send("MAIL FROM:<{}>\r\n".format(by))
+    c.send("RCPT TO:<{}>\r\n".format(to))
+    c.send("DATA\r\n")
+    c.send("FROM: me\r\n")
+    c.send("TO: you\r\n")
+    c.send("Date: {}\r\n".format(Util.now()))
+    c.send_multi()
+    c.send("QUIT\r\n")
+
+def imap():
+    username = os.environ["MAIL_USERNAME"]
+    password = os.environ["MAIL_PASSWORD"]
+    host = os.environ["MAIL_HOST"]
+    c = SSLClient(host, 993)
+    c.connect()
+    c.change2ssl()
+    auth = ". login {} {}\r\n".format(username, password)
+    c.send(auth, secret=True)
+    c.talk()
+    return c
